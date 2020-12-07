@@ -77,6 +77,10 @@ local function on_button_mouse_hover(self, hover_state)
 end
 
 
+local function on_button_pressed(self)
+	self.style.on_pressed(self, self.anim_node)
+end
+
 local function on_button_click(self)
 	self.style.on_click(self, self.anim_node)
 
@@ -161,6 +165,7 @@ end
 -- @tfield[opt=0.4] number LONGTAP_TIME Minimum time to trigger on_hold_callback
 -- @tfield[opt=0.8] number AUTOHOLD_TRIGGER Maximum hold time to trigger button release while holding
 -- @tfield[opt=0.4] number DOUBLETAP_TIME Time between double taps
+-- @tfield function on_pressed (self, node)
 -- @tfield function on_click (self, node)
 -- @tfield function on_click_disabled (self, node)
 -- @tfield function on_hover (self, node, hover_state)
@@ -172,6 +177,7 @@ function Button.on_style_change(self, style)
 	self.style.AUTOHOLD_TRIGGER = style.AUTOHOLD_TRIGGER or 0.8
 	self.style.DOUBLETAP_TIME = style.DOUBLETAP_TIME or 0.4
 
+	self.style.on_pressed = style.on_pressed or function(_, node) end
 	self.style.on_click = style.on_click or function(_, node) end
 	self.style.on_click_disabled = style.on_click_disabled or function(_, node) end
 	self.style.on_mouse_hover = style.on_mouse_hover or function(_, node, state) end
@@ -204,6 +210,7 @@ function Button.init(self, node, callback, params, anim_node)
 	self.key_trigger = nil
 
 	-- Event stubs
+	self.on_pressed = Event()
 	self.on_click = Event(callback)
 	self.on_repeated_click = Event()
 	self.on_long_click = Event()
@@ -249,6 +256,9 @@ function Button.on_input(self, action_id, action)
 		self.can_action = true
 		self.is_repeated_started = false
 		self.last_pressed_time = socket.gettime()
+
+		on_button_pressed(self)
+
 		return true
 	end
 
